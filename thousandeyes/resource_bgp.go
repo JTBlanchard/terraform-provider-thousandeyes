@@ -72,11 +72,12 @@ func resourceBGPRead(d *schema.ResourceData, m interface{}) error {
 		return err
 	}
 
-	d.Set("name", test.TestName)
-	d.Set("bgp_monitors", test.BgpMonitors)
-	d.Set("include_covered_prefixes", test.IncludeCoveredPrefixes)
-	d.Set("prefix", test.Prefix)
-	d.Set("use_public_bgp", test.UsePublicBGP)
+	//d.Set("name", test.TestName)
+	//d.Set("bgp_monitors", test.BgpMonitors)
+	//d.Set("include_covered_prefixes", test.IncludeCoveredPrefixes)
+	//d.Set("prefix", test.Prefix)
+	//d.Set("use_public_bgp", test.UsePublicBGP)
+	ResourceRead(d, test)
 	return nil
 }
 
@@ -84,29 +85,30 @@ func resourceBGPUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
 	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
-	d.Partial(true)
 	id, _ := strconv.Atoi(d.Id())
-	var update thousandeyes.BGP
-	if d.HasChange("name") {
-		update.TestName = d.Get("name").(string)
-	}
-	if d.HasChange("bgp_monitors") {
-		update.BgpMonitors = expandBGPMonitors(d.Get("bgp_monitors").([]interface{}))
-	}
-	if d.HasChange("include_covered_prefixes") {
-		update.IncludeCoveredPrefixes = d.Get("include_covered_prefixes").(int)
-	}
-	if d.HasChange("prefix") {
-		update.Prefix = d.Get("prefix").(string)
-	}
-	if d.HasChange("use_public_bgp") {
-		update.UsePublicBGP = d.Get("use_public_bgp").(int)
-	}
+	//d.Partial(true)
+	//var update thousandeyes.BGP
+	//if d.HasChange("name") {
+	//update.TestName = d.Get("name").(string)
+	//}
+	//if d.HasChange("bgp_monitors") {
+	//update.BgpMonitors = expandBGPMonitors(d.Get("bgp_monitors").([]interface{}))
+	//}
+	//if d.HasChange("include_covered_prefixes") {
+	//update.IncludeCoveredPrefixes = d.Get("include_covered_prefixes").(int)
+	//}
+	//if d.HasChange("prefix") {
+	//update.Prefix = d.Get("prefix").(string)
+	//}
+	//if d.HasChange("use_public_bgp") {
+	//update.UsePublicBGP = d.Get("use_public_bgp").(int)
+	//}
+	//d.Partial(false)
+	update := ResourceUpdate(d, thousandeyes.BGP{}).(thousandeyes.BGP)
 	_, err := client.UpdateBGP(id, update)
 	if err != nil {
 		return err
 	}
-	d.Partial(false)
 	return resourceBGPRead(d, m)
 }
 
@@ -136,13 +138,14 @@ func resourceBGPCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func buildBGPStruct(d *schema.ResourceData) *thousandeyes.BGP {
-	bgpServer := thousandeyes.BGP{
-		TestName:               d.Get("name").(string),
-		BgpMonitors:            expandBGPMonitors(d.Get("bgp_monitors").([]interface{})),
-		IncludeCoveredPrefixes: d.Get("include_covered_prefixes").(int),
-		Prefix:                 d.Get("prefix").(string),
-		UsePublicBGP:           d.Get("use_public_bgp").(int),
-	}
+	//bgpServer := thousandeyes.BGP{
+	//TestName:               d.Get("name").(string),
+	//BgpMonitors:            expandBGPMonitors(d.Get("bgp_monitors").([]interface{})),
+	//IncludeCoveredPrefixes: d.Get("include_covered_prefixes").(int),
+	//Prefix:                 d.Get("prefix").(string),
+	//UsePublicBGP:           d.Get("use_public_bgp").(int),
+	//}
+	bgpServer := ResourceBuildStruct(d, thousandeyes.BGP{}).(thousandeyes.BGP)
 
 	return &bgpServer
 }
