@@ -156,6 +156,22 @@ func ResourceUpdate(d *schema.ResourceData, referenceStruct interface{}) interfa
 	return nil
 }
 
+// ResourceSchemaBuild creates a map of schemas based on the fields
+// of the provided type.
+func ResourceSchemaBuild(referenceStruct interface{}) map[string]*schema.Schema {
+	schema := map[string]*schema.Schema{}
+	v := reflect.ValueOf(referenceStruct).Elem()
+	t := reflect.TypeOf(referenceStruct)
+
+	for i := 0; i < v.NumField(); i++ {
+		//fieldName := t.Field(i).Name
+		tag := GetJSONKey(t.Field(i))
+		tfName := CamelCaseToUnderscore(tag)
+		schema[tfName] = schemas[tfName]
+	}
+	return schema
+}
+
 // FillValue translats a value from the Terraform provider framework and
 // translates it to the correct type, based on the type of the target parameter.
 func FillValue(source interface{}, target interface{}) interface{} {
