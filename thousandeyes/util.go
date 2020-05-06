@@ -139,10 +139,6 @@ func ResourceRead(d *schema.ResourceData, referenceStruct interface{}) interface
 // ResourceUpdate updates a struct's values if changes for those values are
 // found in a provided schema.ResourceData object.
 func ResourceUpdate(d *schema.ResourceData, referenceStruct interface{}) interface{} {
-	//  d.Partial(true)
-	//if d.HasChange("name") {
-	//	update.TestName = d.Get("name").(string)
-	//for field in struct
 	d.Partial(true)
 	v := reflect.ValueOf(referenceStruct)
 	t := reflect.TypeOf(referenceStruct)
@@ -193,22 +189,7 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		newSlice := reflect.Zero(t).Elem()
 		for i := 0; i < v.NumField(); i++ {
 			newVal := reflect.ValueOf(FillValue(v.Field(i), st))
-			//switch st.Kind() {
-			//case reflect.Struct:
-			//newStruct := reflect.Zero(st)
-			//newStructType := reflect.TypeOf(newStruct)
-			//for j := 0; j < newStruct.NumField(); j++ {
-			//tag := GetJSONKey(newStructType.Field(j))
-			//tfName := CamelCaseToUnderscore(tag)
-			//rer := value.(map[string]interface{})
-			//if sv, ok := rer[tfName]; ok {
-			//newStruct.Field(i).Set(sv)
-			//}
-			//}
 			newSlice = reflect.Append(newSlice, newVal)
-			//default:
-			//newSlice = reflect.Append(newSlice, v)
-			//}
 		}
 		return newSlice
 	case reflect.Struct:
