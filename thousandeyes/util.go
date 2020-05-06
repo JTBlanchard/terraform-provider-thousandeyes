@@ -1,6 +1,7 @@
 package thousandeyes
 
 import (
+	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -102,9 +103,7 @@ func unpackSIPAuthData(i interface{}) thousandeyes.SIPAuthData {
 
 // ResourceBuildStruct builds a struct for a given test type
 func ResourceBuildStruct(d *schema.ResourceData, referenceStruct interface{}) interface{} {
-	// for field in struct
-	//newStruct := reflect.Zero(reflect.TypeOf(referenceStruct))
-	v := reflect.ValueOf(referenceStruct).Elem()
+	v := reflect.ValueOf(referenceStruct)
 	t := reflect.TypeOf(referenceStruct)
 	for i := 0; i < v.NumField(); i++ {
 		//fieldName := t.Field(i).Name
@@ -112,11 +111,15 @@ func ResourceBuildStruct(d *schema.ResourceData, referenceStruct interface{}) in
 		tfName := CamelCaseToUnderscore(tag)
 		val, ok := d.GetOk(tfName)
 		if ok {
-			v.Set(reflect.ValueOf(FillValue(val, t)))
+			newVal := reflect.ValueOf(FillValue(val, t))
+			//setField := reflect.ValueOf(&referenceStruct).Elem().Field(i)
+			setElem := reflect.ValueOf(&referenceStruct).Elem()
+			setField := setElem.Field(i)
+			setField.Set(newVal)
 		}
 	}
 
-	return v
+	return referenceStruct
 }
 
 // ResourceRead sets values for a schema.ResourceData object from a struct
@@ -141,7 +144,7 @@ func ResourceUpdate(d *schema.ResourceData, referenceStruct interface{}) interfa
 	//	update.TestName = d.Get("name").(string)
 	//for field in struct
 	d.Partial(true)
-	v := reflect.ValueOf(referenceStruct).Elem()
+	v := reflect.ValueOf(referenceStruct)
 	t := reflect.TypeOf(referenceStruct)
 	for i := 0; i < v.NumField(); i++ {
 		//fieldName := t.Field(i).Name
@@ -159,17 +162,20 @@ func ResourceUpdate(d *schema.ResourceData, referenceStruct interface{}) interfa
 // ResourceSchemaBuild creates a map of schemas based on the fields
 // of the provided type.
 func ResourceSchemaBuild(referenceStruct interface{}) map[string]*schema.Schema {
-	schema := map[string]*schema.Schema{}
-	v := reflect.ValueOf(referenceStruct).Elem()
+	newSchema := map[string]*schema.Schema{}
+	v := reflect.ValueOf(referenceStruct)
 	t := reflect.TypeOf(referenceStruct)
 
 	for i := 0; i < v.NumField(); i++ {
 		//fieldName := t.Field(i).Name
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
-		schema[tfName] = schemas[tfName]
+		if val, ok := schemas[tfName]; ok {
+			newSchema[tfName] = val
+		}
 	}
-	return schema
+	log.Printf("[INFO] Schema Built")
+	return newSchema
 }
 
 // FillValue translats a value from the Terraform provider framework and
@@ -181,7 +187,7 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	case reflect.Slice:
 		// When the target is a slice, we create a new slice of the same type,
 		// then recurse with the value of each element.
-		v := reflect.ValueOf(target).Elem()
+		v := reflect.ValueOf(target)
 		t := reflect.TypeOf(target)
 		st := reflect.TypeOf(t.Elem())
 		newSlice := reflect.Zero(t).Elem()
@@ -208,7 +214,7 @@ func FillValue(source interface{}, target interface{}) interface{} {
 	case reflect.Struct:
 		// When the target is a struct, we assume that the source is a map
 		// containing corresponding values for the struct's fields.
-		v := reflect.ValueOf(target).Elem()
+		v := reflect.ValueOf(target)
 		//t := reflect.TypeOf(target)
 		for i := 0; i < v.NumField(); i++ {
 			newVal := FillValue(source, v.Field(i))
@@ -258,6 +264,8 @@ func UnderscoreToLowerCamelCase(s string) string {
 // CamelCaseToUnderscore translates from camel case (with any leading case)
 // to underscore separated words.
 // ie, either aString and AString would become a_string
+// Special exception for testName, which becomes "name" to preserve
+// pre-existing functionality.
 func CamelCaseToUnderscore(s string) string {
 	var out []rune
 	for i, r := range []rune(s) {
@@ -270,7 +278,12 @@ func CamelCaseToUnderscore(s string) string {
 			out = append(out, r)
 		}
 	}
-	return string(out)
+
+	outString := string(out)
+	if outString == "test_name" {
+		outString = "name"
+	}
+	return outString
 }
 
 // GetJSONKey returns the JSON object key for the struct which is represented
