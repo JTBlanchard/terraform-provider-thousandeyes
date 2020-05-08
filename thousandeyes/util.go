@@ -102,24 +102,30 @@ func unpackSIPAuthData(i interface{}) thousandeyes.SIPAuthData {
 }
 
 // ResourceBuildStruct builds a struct for a given test type
-func ResourceBuildStruct(d *schema.ResourceData, referenceStruct interface{}) interface{} {
-	v := reflect.ValueOf(referenceStruct)
-	t := reflect.TypeOf(referenceStruct)
+func ResourceBuildStruct(d *schema.ResourceData, targetStruct interface{}) interface{} {
+	v := reflect.ValueOf(targetStruct).Elem()
+	vi := v.Interface()
+	t := reflect.TypeOf(vi)
+	//	newStruct := reflect.New(t)
+	//	newStruct.Elem().Set(reflect.ValueOf(referenceStruct))
+	//newStruct := reflect.New(t)
 	for i := 0; i < v.NumField(); i++ {
-		//fieldName := t.Field(i).Name
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
 		val, ok := d.GetOk(tfName)
 		if ok {
-			newVal := reflect.ValueOf(FillValue(val, t))
-			//setField := reflect.ValueOf(&referenceStruct).Elem().Field(i)
-			setElem := reflect.ValueOf(&referenceStruct).Elem()
-			setField := setElem.Field(i)
-			setField.Set(newVal)
+			log.Printf("[INFO] Filling tag %+v\n", tfName)
+			newVal := reflect.ValueOf(FillValue(val, v.Field(i).Interface()))
+			//			setField := reflect.ValueOf(newStruct).FieldByName(fieldName)
+			//			log.Printf("[INFO] fieldName: %+v\n", fieldName)
+
+			v.Field(i).Set(newVal)
+			log.Printf("[INFO] struct state %+v\n", v)
+			//			setField.Set(newVal)
 		}
 	}
 
-	return referenceStruct
+	return targetStruct
 }
 
 // ResourceRead sets values for a schema.ResourceData object from a struct
@@ -147,12 +153,12 @@ func ResourceUpdate(d *schema.ResourceData, referenceStruct interface{}) interfa
 		tag := GetJSONKey(t.Field(i))
 		tfName := CamelCaseToUnderscore(tag)
 		if d.HasChange(tfName) {
-			newVal := FillValue(d.Get(tfName), v.Field(i))
-			v.Field(i).Elem().Set(reflect.ValueOf(newVal))
+			newVal := reflect.ValueOf(FillValue(d.Get(tfName), v.Field(i))).Elem()
+			v.Field(i).Elem().Set(reflect.ValueOf(newVal).Elem())
 		}
 	}
 	d.Partial(false)
-	return nil
+	return referenceStruct
 }
 
 // ResourceSchemaBuild creates a map of schemas based on the fields
@@ -170,7 +176,6 @@ func ResourceSchemaBuild(referenceStruct interface{}) map[string]*schema.Schema 
 			newSchema[tfName] = val
 		}
 	}
-	log.Printf("[INFO] Schema Built")
 	return newSchema
 }
 
@@ -179,36 +184,55 @@ func ResourceSchemaBuild(referenceStruct interface{}) map[string]*schema.Schema 
 func FillValue(source interface{}, target interface{}) interface{} {
 	// We determine how to interpret the supplied value based on
 	// the type of the target argument.
-	switch reflect.ValueOf(target).Kind() {
+	vt := reflect.ValueOf(target)
+	log.Printf("[INFO] FillValue source: %+v\n", source)
+	log.Printf("[INFO] FillValue target kind: %+v\n", vt.Kind())
+	log.Printf("[INFO] FillValue target type: %+v\n", reflect.TypeOf(target))
+	log.Printf("[INFO] FillValue target type: %+v\n", reflect.TypeOf(vt.Interface()))
+	switch vt.Kind() {
 	case reflect.Slice:
 		// When the target is a slice, we create a new slice of the same type,
 		// then recurse with the value of each element.
-		v := reflect.ValueOf(target)
+		vs := reflect.ValueOf(source)
 		t := reflect.TypeOf(target)
-		st := reflect.TypeOf(t.Elem())
-		newSlice := reflect.Zero(t).Elem()
-		for i := 0; i < v.NumField(); i++ {
-			newVal := reflect.ValueOf(FillValue(v.Field(i), st))
-			newSlice = reflect.Append(newSlice, newVal)
+		st := reflect.TypeOf(target).Elem() // The type of items in the slice
+		log.Printf("[INFO] FillValue single type: %+v\n", st)
+		newSlice := reflect.New(t).Elem()
+		for i := 0; i < vs.Len(); i++ {
+			toAppend := FillValue(vs.Index(i).Interface(), reflect.New(st))
+			log.Printf("[INFO] FillValue single: %+v\n", toAppend)
+			appendVal := reflect.ValueOf(toAppend)
+			log.Printf("[INFO] FillValue single val: %+v\n", appendVal)
+			newSlice = reflect.Append(newSlice, appendVal)
 		}
+		log.Printf("[INFO] FillValue slice: %+v\n", newSlice)
+		log.Printf("[INFO] FillValue slice: %+v\n", reflect.TypeOf(newSlice.Interface()))
 		return newSlice
 	case reflect.Struct:
 		// When the target is a struct, we assume that the source is a map
-		// containing corresponding values for the struct's fields.
-		v := reflect.ValueOf(target)
-		//t := reflect.TypeOf(target)
-		for i := 0; i < v.NumField(); i++ {
-			newVal := FillValue(source, v.Field(i))
-			v.Field(i).Elem().Set(reflect.ValueOf(newVal))
+		// containing corresponding values for the struct's fields, then
+		// recurse on each value looked up.
+		t := reflect.TypeOf(target)
+		m := source.(map[string]interface{})
+		for i := 0; i < vt.NumField(); i++ {
+			tag := GetJSONKey(t.Field(i))
+			tfName := CamelCaseToUnderscore(tag)
+			if mv, ok := m[tfName]; ok {
+				newVal := FillValue(mv, vt.Field(i).Interface())
+				vt.Field(i).Elem().Set(reflect.ValueOf(newVal))
+			}
 		}
-		return v
+		log.Printf("[INFO] FillValue struct: %+v\n", vt)
+		return vt
 	case reflect.Int:
 		// Int values come to us as strings.
 		i, _ := strconv.Atoi(source.(string))
+		log.Printf("[INFO] FillValue int: %+v\n", i)
 		return i
 	default:
 		// If we haven't matched one of the above cases, then there
 		// is likely no reason to translate.
+		log.Printf("[INFO] FillValue default: %+v\n", source)
 		return source
 	}
 

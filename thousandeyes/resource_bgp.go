@@ -75,7 +75,7 @@ func resourceBGPCreate(d *schema.ResourceData, m interface{}) error {
 }
 
 func buildBGPStruct(d *schema.ResourceData) *thousandeyes.BGP {
-	bgpServer := ResourceBuildStruct(d, thousandeyes.BGP{}).(thousandeyes.BGP)
+	bgpServer := ResourceBuildStruct(d, &thousandeyes.BGP{}).(thousandeyes.BGP)
 
 	return &bgpServer
 }
