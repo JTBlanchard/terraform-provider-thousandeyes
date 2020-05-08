@@ -194,12 +194,13 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		// When the target is a slice, we create a new slice of the same type,
 		// then recurse with the value of each element.
 		vs := reflect.ValueOf(source)
-		t := reflect.TypeOf(target)
-		st := reflect.TypeOf(target).Elem() // The type of items in the slice
-		log.Printf("[INFO] FillValue single type: %+v\n", st)
-		newSlice := reflect.New(t).Elem()
+		tt := reflect.TypeOf(target)
+		tte := reflect.TypeOf(target).Elem() // The type of items in the slice
+		ntte := reflect.New(tte).Elem()
+		log.Printf("[INFO] FillValue single type: %+v\n", tte)
+		newSlice := reflect.New(tt).Elem()
 		for i := 0; i < vs.Len(); i++ {
-			toAppend := FillValue(vs.Index(i).Interface(), reflect.New(st))
+			toAppend := FillValue(vs.Index(i).Interface(), ntte.Interface())
 			log.Printf("[INFO] FillValue single: %+v\n", toAppend)
 			appendVal := reflect.ValueOf(toAppend)
 			log.Printf("[INFO] FillValue single val: %+v\n", appendVal)
@@ -212,23 +213,35 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		// When the target is a struct, we assume that the source is a map
 		// containing corresponding values for the struct's fields, then
 		// recurse on each value looked up.
-		t := reflect.TypeOf(target)
+		t := reflect.TypeOf(vt.Interface())
+		newStruct := reflect.New(t).Interface()
+		setStruct := reflect.ValueOf(&newStruct).Elem()
 		m := source.(map[string]interface{})
+		log.Printf("[INFO] FillValue struct target: %+v\n", t)
+		log.Printf("[INFO] FillValue struct map: %+v\n", m)
 		for i := 0; i < vt.NumField(); i++ {
 			tag := GetJSONKey(t.Field(i))
 			tfName := CamelCaseToUnderscore(tag)
 			if mv, ok := m[tfName]; ok {
 				newVal := FillValue(mv, vt.Field(i).Interface())
-				vt.Field(i).Elem().Set(reflect.ValueOf(newVal))
+				log.Printf("[INFO] FillValue struct tag: %+v\n", tag)
+				log.Printf("[INFO] FillValue newVal type: %+v\n", reflect.TypeOf(newVal))
+				setStruct.Field(i).Set(reflect.ValueOf(newVal))
+			} else {
+				log.Printf("[INFO] FillValue struct tag missing: %+v\n", tag)
 			}
 		}
 		log.Printf("[INFO] FillValue struct: %+v\n", vt)
-		return vt
+		return vt.Interface()
 	case reflect.Int:
-		// Int values come to us as strings.
-		i, _ := strconv.Atoi(source.(string))
-		log.Printf("[INFO] FillValue int: %+v\n", i)
-		return i
+		// Values destined to be ints may come to us as strings.
+		if reflect.TypeOf(source).Kind() == reflect.String {
+			i, _ := strconv.Atoi(source.(string))
+			log.Printf("[INFO] FillValue int: %+v\n", i)
+			return i
+		}
+
+		return source
 	default:
 		// If we haven't matched one of the above cases, then there
 		// is likely no reason to translate.
