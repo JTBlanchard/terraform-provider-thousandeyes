@@ -101,9 +101,10 @@ func unpackSIPAuthData(i interface{}) thousandeyes.SIPAuthData {
 	return sipAuthData
 }
 
-// ResourceBuildStruct builds a struct for a given test type
-func ResourceBuildStruct(d *schema.ResourceData, targetStruct interface{}) interface{} {
-	v := reflect.ValueOf(targetStruct).Elem()
+// ResourceBuildStruct places data into a given struct at a given address
+// by filling in fields according to their JSON tag.
+func ResourceBuildStruct(d *schema.ResourceData, structPtr interface{}) interface{} {
+	v := reflect.ValueOf(structPtr).Elem()
 	vi := v.Interface()
 	t := reflect.TypeOf(vi)
 	//	newStruct := reflect.New(t)
@@ -125,7 +126,7 @@ func ResourceBuildStruct(d *schema.ResourceData, targetStruct interface{}) inter
 		}
 	}
 
-	return targetStruct
+	return structPtr
 }
 
 // ResourceRead sets values for a schema.ResourceData object from a struct
@@ -208,16 +209,18 @@ func FillValue(source interface{}, target interface{}) interface{} {
 		}
 		log.Printf("[INFO] FillValue slice: %+v\n", newSlice)
 		log.Printf("[INFO] FillValue slice: %+v\n", reflect.TypeOf(newSlice.Interface()))
-		return newSlice
+		return newSlice.Interface()
 	case reflect.Struct:
 		// When the target is a struct, we assume that the source is a map
 		// containing corresponding values for the struct's fields, then
 		// recurse on each value looked up.
 		t := reflect.TypeOf(vt.Interface())
 		newStruct := reflect.New(t).Interface()
-		setStruct := reflect.ValueOf(&newStruct).Elem()
+		setStruct := reflect.ValueOf(newStruct).Elem()
 		m := source.(map[string]interface{})
-		log.Printf("[INFO] FillValue struct target: %+v\n", t)
+		log.Printf("[INFO] FillValue struct target: %+v\n", newStruct)
+		log.Printf("[INFO] FillValue struct settable target: %+v\n", setStruct)
+		log.Printf("[INFO] FillValue struct target type: %+v\n", t)
 		log.Printf("[INFO] FillValue struct map: %+v\n", m)
 		for i := 0; i < vt.NumField(); i++ {
 			tag := GetJSONKey(t.Field(i))
@@ -231,8 +234,8 @@ func FillValue(source interface{}, target interface{}) interface{} {
 				log.Printf("[INFO] FillValue struct tag missing: %+v\n", tag)
 			}
 		}
-		log.Printf("[INFO] FillValue struct: %+v\n", vt)
-		return vt.Interface()
+		log.Printf("[INFO] FillValue struct: %+v\n", newStruct)
+		return setStruct.Interface()
 	case reflect.Int:
 		// Values destined to be ints may come to us as strings.
 		if reflect.TypeOf(source).Kind() == reflect.String {
