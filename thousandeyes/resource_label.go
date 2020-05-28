@@ -10,7 +10,7 @@ import (
 
 func resourceGroupLabel() *schema.Resource {
 	resource := schema.Resource{
-		Schema: ResourceSchemaBuild(thousandeyes.GroupLabel{}),
+		Schema: ResourceSchemaBuild(thousandeyes.GroupLabel{}, schemas),
 		Create: resourceGroupLabelCreate,
 		Read:   resourceGroupLabelRead,
 		Update: resourceGroupLabelUpdate,
