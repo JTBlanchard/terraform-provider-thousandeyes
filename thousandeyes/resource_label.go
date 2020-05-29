@@ -25,7 +25,7 @@ func resourceGroupLabel() *schema.Resource {
 func resourceGroupLabelRead(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
-	log.Printf("[INFO] Reading Thousandeyes Test %s", d.Id())
+	log.Printf("[INFO] Reading Thousandeyes Label %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
 	remote, err := client.GetGroupLabel(id)
 	if err != nil {
@@ -38,7 +38,7 @@ func resourceGroupLabelRead(d *schema.ResourceData, m interface{}) error {
 func resourceGroupLabelUpdate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
-	log.Printf("[INFO] Updating ThousandEyes Test %s", d.Id())
+	log.Printf("[INFO] Updating ThousandEyes Label %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
 	update := ResourceUpdate(d, &thousandeyes.GroupLabel{}).(*thousandeyes.GroupLabel)
 	_, err := client.UpdateGroupLabel(id, *update)
@@ -51,7 +51,7 @@ func resourceGroupLabelUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceGroupLabelDelete(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
 
-	log.Printf("[INFO] Deleting ThousandEyes Test %s", d.Id())
+	log.Printf("[INFO] Deleting ThousandEyes Label %s", d.Id())
 	id, _ := strconv.Atoi(d.Id())
 	if err := client.DeleteGroupLabel(id); err != nil {
 		return err
@@ -62,7 +62,7 @@ func resourceGroupLabelDelete(d *schema.ResourceData, m interface{}) error {
 
 func resourceGroupLabelCreate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*thousandeyes.Client)
-	log.Printf("[INFO] Creating ThousandEyes Test %s", d.Id())
+	log.Printf("[INFO] Creating ThousandEyes Label %s", d.Id())
 	local := buildGroupLabelStruct(d)
 	remote, err := client.CreateGroupLabel(*local)
 	if err != nil {
