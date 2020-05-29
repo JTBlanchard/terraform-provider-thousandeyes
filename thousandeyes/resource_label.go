@@ -19,6 +19,8 @@ func resourceGroupLabel() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 	}
+	resource.Schema["type"] = schemas["type--label"]
+	resource.Schema["agents"] = schemas["agents--label"]
 	return &resource
 }
 

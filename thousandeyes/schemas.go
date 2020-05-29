@@ -20,6 +20,20 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
+	"agents--label": {
+		Type:        schema.TypeList,
+		Description: "agents to use ",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"agent_id": {
+					Type:        schema.TypeInt,
+					Description: "agent id",
+					Optional:    true,
+				},
+			},
+		},
+	},
 	"alert_rules": {
 		Description: "get ruleId from /alert-rules endpoint. If alertsEnabled is set to 1 and alertRules is not included in a creation/update query, applicable defaults will be used.",
 		Optional:    true,
@@ -356,6 +370,20 @@ var schemas = map[string]*schema.Schema{
 		Description: "Name of Test",
 		Required:    true,
 	},
+	"tests": {
+		Type:        schema.TypeList,
+		Description: "list of tests",
+		Required:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"test_id": {
+					Type:        schema.TypeInt,
+					Description: "test id",
+					Optional:    true,
+				},
+			},
+		},
+	},
 	"time_limit": {
 		Type:         schema.TypeInt,
 		Description:  "time limit for transaction; defaults to 30s",
@@ -396,6 +424,12 @@ var schemas = map[string]*schema.Schema{
 		Type: schema.TypeString,
 		Description: "Type of test",
 		Computed:  true,
+	},
+	"type--label": {
+		Type:         schema.TypeString,
+		Description:  "Type of label (tests, agents, or endpoint_agents",
+		Required:     true,
+		ValidateFunc: validation.StringInSlice([]string{"tests", "agents", "endpoint_agents"}, false),
 	},
 	"url": {
 		Type:        schema.TypeString,
