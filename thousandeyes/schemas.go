@@ -99,6 +99,11 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
+	"client_certificate": {
+		Type:        schema.TypeString,
+		Description: "String representation (containing newline characters) of client certificate, if used",
+		Optional:    true,
+	},
 	"codec_id": {
 		Type:         schema.TypeInt,
 		Description:  "codec to use",
@@ -110,6 +115,14 @@ var schemas = map[string]*schema.Schema{
 		Description: "regular Expressions	Verify content using a regular expression. This field does not require escaping",
 		Optional: true,
 		Default:  "NONE",
+	},
+	"custom_headers": {
+		Type: schema.TypeMap,
+		Elem: &schema.Schema{
+			Type: schema.TypeMap,
+			Elem: schema.TypeString,
+		},
+		Optional: true,
 	},
 	"description": {
 		Type:        schema.TypeString,
@@ -180,6 +193,20 @@ var schemas = map[string]*schema.Schema{
 		Required:     false,
 		Default:      1,
 		ValidateFunc: validation.IntBetween(0, 1),
+	},
+	"follow_redirects": {
+		Type:        schema.TypeInt,
+		Description: "set to 0 to not follow HTTP/301 or HTTP/302 redirect directives. Default is 1",
+		Optional:    true,
+		Default:     1,
+	},
+	"headers": {
+		Type:        schema.TypeList,
+		Description: "array of header strings [\"header: value\", \"header2: value\"]",
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+		Optional: true,
 	},
 	"http_interval": {
 		Type:        schema.TypeInt,
@@ -264,12 +291,29 @@ var schemas = map[string]*schema.Schema{
 		Default:      3,
 		Optional:     true,
 		Required:     false,
-		ValidateFunc: validation.IntBetween(3, 10),
+		ValidateFunc: validation.IntBetween(1, 10),
+	},
+	"page_load_target_time": {
+		Type:        schema.TypeInt,
+		Description: "target time for Page Load completion; specified in seconds (1 to 30); cannot exceed pageLoadTimeLimit value",
+		Optional:    true,
+	},
+	"page_load_time_limit": {
+		Type:         schema.TypeInt,
+		Description:  "must be larger than httpTimeLimit; defaults to 10 seconds",
+		Optional:     true,
+		Default:      10,
+		ValidateFunc: validation.IntBetween(5, 60),
 	},
 	"password": {
 		Type:        schema.TypeString,
-		Required:    true,
+		Optional:    true,
 		Description: "password to be used to authenticate with the destination server",
+	},
+	"password--ftp": {
+		Type:        schema.TypeString,
+		Required:    true,
+		Description: "password to be used to authenticate with the destination server (required for FTP)",
 	},
 	"path_trace_mode": {
 		Type:         schema.TypeString,
@@ -311,6 +355,12 @@ var schemas = map[string]*schema.Schema{
 		Default:      "TCP",
 		ValidateFunc: validation.StringInSlice([]string{"TCP", "ICMP"}, false),
 	},
+	"protocol--agent_to_agent": {
+		Type:         schema.TypeString,
+		Description:  "Protocol for agent to agent tests, TCP or UDP.  Defaults to TCP",
+		Required:     true,
+		ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP"}, false),
+	},
 	"protocol--sip": {
 		Type:         schema.TypeString,
 		Description:  "transport layer for SIP communication: TCP, TLS (TLS over TCP), or UDP. Defaults to TCP",
@@ -340,9 +390,9 @@ var schemas = map[string]*schema.Schema{
 		Description:  "0 for auto, 3 for SSLv3, 4 for TLS v1.0, 5 for TLS v1.1, 6 for TLS v1.2",
 		Optional:     true,
 		Default:      0,
-		ValidateFunc: validation.IntBetween(1, 2),
+		ValidateFunc: validation.IntInSlice([]int{0, 3, 4, 5, 6}),
 	},
-	"sub_interval": {
+	"subinterval": {
 		Type:         schema.TypeInt,
 		Description:  "subinterval for round-robin testing (in seconds), must be less than or equal to interval",
 		Optional:     true,
@@ -421,9 +471,9 @@ var schemas = map[string]*schema.Schema{
 		Required:    true,
 	},
 	"type": {
-		Type: schema.TypeString,
+		Type:        schema.TypeString,
 		Description: "Type of test",
-		Computed:  true,
+		Computed:    true,
 	},
 	"type--label": {
 		Type:         schema.TypeString,
@@ -458,6 +508,11 @@ var schemas = map[string]*schema.Schema{
 		Optional:    true,
 	},
 	"username": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Description: "username to be used to authenticate with the destination server",
+	},
+	"username--ftp": {
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "username to be used to authenticate with the destination server",
