@@ -200,6 +200,25 @@ var schemas = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     1,
 	},
+	"groups": {
+		Type:        schema.TypeList,
+		Description: "array of label objects",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"group_id": {
+					Type:        schema.TypeInt,
+					Description: "Unique ID of the label",
+					Required:    true,
+				},
+				"name": {
+					Type:        schema.TypeString,
+					Description: "Name of the label",
+					Optional:    true,
+				},
+			},
+		},
+	},
 	"headers": {
 		Type:        schema.TypeList,
 		Description: "array of header strings [\"header: value\", \"header2: value\"]",
@@ -385,6 +404,25 @@ var schemas = map[string]*schema.Schema{
 		Description: "target host",
 		Required:    true,
 	},
+	"shared_with_accounts": {
+		Type:        schema.TypeList,
+		Description: "array of DNS Server objects {“serverName”: “fqdn of server”}",
+		Optional:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"aid": {
+					Type:        schema.TypeInt,
+					Description: "Account group ID",
+					Required:    true,
+				},
+				"name": {
+					Type:        schema.TypeString,
+					Description: "Account group name",
+					Optional:    true,
+				},
+			},
+		},
+	},
 	"ssl_version_id": {
 		Type:         schema.TypeInt,
 		Description:  "0 for auto, 3 for SSLv3, 4 for TLS v1.0, 5 for TLS v1.1, 6 for TLS v1.2",
@@ -423,7 +461,7 @@ var schemas = map[string]*schema.Schema{
 	"tests": {
 		Type:        schema.TypeList,
 		Description: "list of tests",
-		Required:    true,
+		Optional:    true,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"test_id": {
@@ -477,9 +515,9 @@ var schemas = map[string]*schema.Schema{
 	},
 	"type--label": {
 		Type:         schema.TypeString,
-		Description:  "Type of label (tests, agents, or endpoint_agents",
+		Description:  "Type of label (tests, agents, endpoint_tests, or endpoint_agents",
 		Required:     true,
-		ValidateFunc: validation.StringInSlice([]string{"tests", "agents", "endpoint_agents"}, false),
+		ValidateFunc: validation.StringInSlice([]string{"tests", "agents", "endpoint_tests", "endpoint_agents"}, false),
 	},
 	"url": {
 		Type:        schema.TypeString,
