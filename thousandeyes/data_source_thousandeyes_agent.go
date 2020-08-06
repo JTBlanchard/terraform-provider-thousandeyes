@@ -13,7 +13,7 @@ func dataSourceThousandeyesAgent() *schema.Resource {
 		Read: dataSourceThousandeyesAgentRead,
 
 		Schema: map[string]*schema.Schema{
-			"name": {
+			"agent_name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -30,7 +30,7 @@ func dataSourceThousandeyesAgentRead(d *schema.ResourceData, meta interface{}) e
 
 	log.Printf("[INFO] Reading Thousandeyes agent")
 
-	searchName := d.Get("name").(string)
+	searchName := d.Get("agent_name").(string)
 
 	agents, err := client.GetAgents()
 	if err != nil {
@@ -52,7 +52,7 @@ func dataSourceThousandeyesAgentRead(d *schema.ResourceData, meta interface{}) e
 	log.Printf("[INFO] ## Found Agent agent_id: %d - name: %s", found.AgentID, found.AgentName)
 
 	d.SetId(string(found.AgentID))
-	d.Set("name", found.AgentName)
+	d.Set("agent_name", found.AgentName)
 	d.Set("agent_id", found.AgentID)
 
 	return nil
