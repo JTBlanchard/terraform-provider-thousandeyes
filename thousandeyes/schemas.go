@@ -200,6 +200,7 @@ var schemas = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     1,
 	},
+<<<<<<< HEAD
 	"groups": {
 		Type:        schema.TypeList,
 		Description: "array of label objects",
@@ -219,6 +220,8 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
+=======
+>>>>>>> d029506a06686818fdfc03e993e7ad7402d5c3aa
 	"headers": {
 		Type:        schema.TypeList,
 		Description: "array of header strings [\"header: value\", \"header2: value\"]",
