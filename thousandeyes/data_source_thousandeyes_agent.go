@@ -21,6 +21,10 @@ func dataSourceThousandeyesAgent() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
+			"agent_type": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }

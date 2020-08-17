@@ -172,6 +172,11 @@ var schemas = map[string]*schema.Schema{
 		Optional: false,
 		Required: true,
 	},
+	"download_limit": {
+		Type:        schema.TypeInt,
+		Description: "specify maximum number of bytes to download from the target object",
+		Optional:    true,
+	},
 	"dscp_id": {
 		Type:         schema.TypeInt,
 		Description:  "A Differentiated Services Code Point (DSCP) is a value found in an IP packet header which is used to request a level of priority for delivery (Defined in RFC 2474 https://www.ietf.org/rfc/rfc2474.txt). It is one of the Quality of Service management tools used in router configuration to protect real-time and high priority data applications.",
@@ -200,7 +205,11 @@ var schemas = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     1,
 	},
-<<<<<<< HEAD
+	"group_id": {
+		Type:        schema.TypeInt,
+		Description: "ID of group lable",
+		Computed:    true,
+	},
 	"groups": {
 		Type:        schema.TypeList,
 		Description: "array of label objects",
@@ -220,8 +229,6 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
-=======
->>>>>>> d029506a06686818fdfc03e993e7ad7402d5c3aa
 	"headers": {
 		Type:        schema.TypeList,
 		Description: "array of header strings [\"header: value\", \"header2: value\"]",
@@ -315,6 +322,12 @@ var schemas = map[string]*schema.Schema{
 		Required:     false,
 		ValidateFunc: validation.IntBetween(1, 10),
 	},
+	"options_regex": {
+		Type:         schema.TypeString,
+		Description:  "regex string. This field does not require escaping.",
+		Optional:     true,
+		ValidateFunc: validation.StringIsValidRegExp,
+	},
 	"page_load_target_time": {
 		Type:        schema.TypeInt,
 		Description: "target time for Page Load completion; specified in seconds (1 to 30); cannot exceed pageLoadTimeLimit value",
@@ -397,6 +410,13 @@ var schemas = map[string]*schema.Schema{
 		Optional: true,
 		Required: false,
 	},
+	"register_enabled": {
+		Type:         schema.TypeInt,
+		Default:      0,
+		Description:  "1 to perform SIP registration on the test target with the SIP REGISTER command, defaults to 0",
+		Optional:     true,
+		ValidateFunc: validation.IntBetween(0, 1),
+	},
 	"request_type": {
 		Type:        schema.TypeString,
 		Required:    true,
@@ -426,6 +446,22 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
+	"sip_target_time": {
+		Type:         schema.TypeInt,
+		Description:  "target time for test completion; specified in milliseconds",
+		Optional:     true,
+		ValidateFunc: validation.IntBetween(100, 5000),
+	},
+	"sip_time_limit": {
+		Type:         schema.TypeInt,
+		Description:  "defaults to 5 seconds",
+		Optional:     true,
+		ValidateFunc: validation.IntBetween(5, 10),
+	},
+	"source_sip_credentials": {
+		Type:     schema.TypeMap,
+		Required: true,
+	},
 	"ssl_version_id": {
 		Type:         schema.TypeInt,
 		Description:  "0 for auto, 3 for SSLv3, 4 for TLS v1.0, 5 for TLS v1.1, 6 for TLS v1.2",
@@ -444,6 +480,10 @@ var schemas = map[string]*schema.Schema{
 		Optional: false,
 		Required: true,
 		Description: "pull from /agents endpoint	Both the 'agents': [] and the targetAgentID cannot be cloud agents. Can be Enterprise Agent -> Cloud, Cloud -> Enterprise Agent, or Enterprise Agent -> Enterprise Agent",
+	},
+	"target_sip_credentials": {
+		Type:     schema.TypeMap,
+		Required: true,
 	},
 	"target_time": {
 		Type:         schema.TypeInt,
@@ -541,7 +581,7 @@ var schemas = map[string]*schema.Schema{
 	"user": {
 		Type:        schema.TypeString,
 		Description: "username for SIP registration; should be unique within a ThousandEyes Account Group",
-		Required:    true,
+		Optional:    true,
 	},
 	"user_agent": {
 		Type:        schema.TypeString,
