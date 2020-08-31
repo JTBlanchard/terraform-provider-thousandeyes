@@ -49,6 +49,12 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
+	"alert_type": {
+		Description:  "Acceptable test types, verbose names",
+		Type:         schema.TypeString,
+		Required:     true,
+		ValidateFunc: validation.StringInSlice([]string{"Page Load", "HTTP Server", "End-to-End (Server)", "End-to-End (Agent)", "Voice", "DNS+ Domain", "DNS+ Server", "DNS Server", "DNS Trace", "DNSSEC", "Transactions", "Web Transactions", "BGP", "Path Trace", "FTP", "SIP Server"}, false),
+	},
 	"alerts_enabled": {
 		Type:         schema.TypeInt,
 		Description:  "choose 1 to enable alerts, or 0 to disable alerts. Defaults to 1",
@@ -124,6 +130,13 @@ var schemas = map[string]*schema.Schema{
 		},
 		Optional: true,
 	},
+	"default": {
+		Type:         schema.TypeInt,
+		Description:  "to set the rule as a default, set this value to 1.",
+		Optional:     true,
+		Default:      0,
+		ValidateFunc: validation.IntBetween(0, 1),
+	},
 	"description": {
 		Type:        schema.TypeString,
 		Required:    false,
@@ -141,6 +154,12 @@ var schemas = map[string]*schema.Schema{
 		Description: "[TO_TARGET, FROM_TARGET, BIDIRECTIONAL]	Direction of the test (affects how results are shown)",
 		Optional:     false,
 		Required:     true,
+		ValidateFunc: validation.StringInSlice([]string{"TO_TARGET", "FROM_TARGET", "BIDIRECTIONAL"}, false),
+	},
+	"direction--alert_rule": {
+		Type: schema.TypeString,
+		Description: "[TO_TARGET, FROM_TARGET, BIDIRECTIONAL]	Direction of the test (affects how results are shown)",
+		Optional:     true,
 		ValidateFunc: validation.StringInSlice([]string{"TO_TARGET", "FROM_TARGET", "BIDIRECTIONAL"}, false),
 	},
 	"dns_servers": {
@@ -198,6 +217,11 @@ var schemas = map[string]*schema.Schema{
 		Required:     false,
 		Default:      1,
 		ValidateFunc: validation.IntBetween(0, 1),
+	},
+	"expression": {
+		Type:        schema.TypeString,
+		Description: "Alert rule evaluation expression",
+		Optional:    true,
 	},
 	"follow_redirects": {
 		Type:        schema.TypeInt,
@@ -291,6 +315,16 @@ var schemas = map[string]*schema.Schema{
 		Optional:     true,
 		ValidateFunc: validation.IntBetween(0, 150),
 	},
+	"minimum_sources": {
+		Type:        schema.TypeInt,
+		Description: "The minimum number of agents or monitors that must meet the specified criteria in order to trigger an alert",
+		Optional:    true,
+	},
+	"minimum_sources_pct": {
+		Type:        schema.TypeInt,
+		Description: "The minimum percentage of agents or monitors that must meet the specified criteria in order to trigger an alert",
+		Optional:    true,
+	},
 	"mss": {
 		Type: schema.TypeInt,
 		Description: "(30..1400)	Maximum Segment Size, in bytes.",
@@ -312,6 +346,20 @@ var schemas = map[string]*schema.Schema{
 		Default:      1,
 		Optional:     true,
 		Required:     false,
+		ValidateFunc: validation.IntBetween(0, 1),
+	},
+	"notifications": {
+		Description: "TypeMap",
+		Optional:    true,
+		Type:        schema.TypeMap,
+		Elem: &schema.Schema{
+			Type: schema.TypeList,
+		},
+	},
+	"notify_on_clear": {
+		Type:         schema.TypeInt,
+		Description:  "set to 1 to trigger the notification when the alert clears.",
+		Optional:     true,
 		ValidateFunc: validation.IntBetween(0, 1),
 	},
 	"num_path_traces": {
@@ -422,6 +470,34 @@ var schemas = map[string]*schema.Schema{
 		Required:    true,
 		Description: "Set the type of activity for the test: Download, Upload, or List",
 	},
+	"rounds_violating_mode": {
+		Type:         schema.TypeString,
+		Description:  "ANY or EXACT.  EXACT requires that the same agent(s) meet the threshold in consecutive rounds; default is ANY",
+		Optional:     true,
+		ValidateFunc: validation.StringInSlice([]string{"ANY", "EXACT"}, false),
+	},
+	"rounds_violating_required": {
+		Type:         schema.TypeInt,
+		Description:  "specifies the numerator (X value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10. Must be less than or equal to roundsViolatingOutOf",
+		Required:     true,
+		ValidateFunc: validation.IntBetween(1, 10),
+	},
+	"rounds_violating_out_of": {
+		Type:         schema.TypeInt,
+		Description:  "specifies the divisor (Y value) of the “X of Y times” condition in an alert rule.  Minimum value is 1, maximum value is 10.",
+		Required:     true,
+		ValidateFunc: validation.IntBetween(1, 10),
+	},
+	"rule_id": {
+		Type:        schema.TypeInt,
+		Description: "ID of alert rule",
+		Computed:    true,
+	},
+	"rule_name": {
+		Type:        schema.TypeString,
+		Description: "name of the alert rule",
+		Required:    true,
+	},
 	"server": {
 		Type:        schema.TypeString,
 		Description: "target host",
@@ -495,6 +571,14 @@ var schemas = map[string]*schema.Schema{
 		Type:        schema.TypeInt,
 		Description: "Unique ID of test",
 		Computed:    true,
+	},
+	"test_ids": {
+		Type:        schema.TypeList,
+		Description: "Valid test IDs",
+		Optional:    true,
+		Elem: &schema.Schema{
+			Type: schema.TypeInt,
+		},
 	},
 	"test_name": {
 		Type:        schema.TypeString,
