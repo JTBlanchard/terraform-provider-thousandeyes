@@ -42,6 +42,7 @@ func Provider() *schema.Provider {
 		DataSourcesMap: map[string]*schema.Resource{
 			"thousandeyes_agent":       dataSourceThousandeyesAgent(),
 			"thousandeyes_bgp_monitor": dataSourceThousandeyesBGPMonitor(),
+			"thousandeyes_integration": dataSourceThousandeyesIntegration(),
 		},
 		ConfigureFunc: providerConfigure,
 	}
