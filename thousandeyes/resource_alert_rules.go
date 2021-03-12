@@ -19,7 +19,7 @@ func resourceAlertRule() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 	}
-	resource.Schema["direction"] = schemas["direction--alert_rule"]
+	resource.Schema["direction"] = schemas["direction-alert_rule"]
 	return &resource
 }
 

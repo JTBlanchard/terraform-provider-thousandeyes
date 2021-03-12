@@ -19,8 +19,8 @@ func resourceFTPServer() *schema.Resource {
 			State: schema.ImportStatePassthrough,
 		},
 	}
-	resource.Schema["password"] = schemas["password--ftp"]
-	resource.Schema["username"] = schemas["username--ftp"]
+	resource.Schema["password"] = schemas["password-ftp"]
+	resource.Schema["username"] = schemas["username-ftp"]
 	return &resource
 }
 

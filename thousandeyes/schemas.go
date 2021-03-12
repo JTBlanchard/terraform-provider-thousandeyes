@@ -57,7 +57,7 @@ var schemas = map[string]*schema.Schema{
 			},
 		},
 	},
-	"agents--label": {
+	"agents-label": {
 		Type:        schema.TypeList,
 		Description: "agents to use ",
 		Optional:    true,
@@ -207,7 +207,7 @@ var schemas = map[string]*schema.Schema{
 		Required:     true,
 		ValidateFunc: validation.StringInSlice([]string{"TO_TARGET", "FROM_TARGET", "BIDIRECTIONAL"}, false),
 	},
-	"direction--alert_rule": {
+	"direction-alert_rule": {
 		Type: schema.TypeString,
 		Description: "[TO_TARGET, FROM_TARGET, BIDIRECTIONAL]	Direction of the test (affects how results are shown)",
 		Optional:     true,
@@ -454,7 +454,7 @@ var schemas = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "password to be used to authenticate with the destination server",
 	},
-	"password--ftp": {
+	"password-ftp": {
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "password to be used to authenticate with the destination server (required for FTP)",
@@ -499,13 +499,13 @@ var schemas = map[string]*schema.Schema{
 		Default:      "TCP",
 		ValidateFunc: validation.StringInSlice([]string{"TCP", "ICMP"}, false),
 	},
-	"protocol--agent_to_agent": {
+	"protocol-agent_to_agent": {
 		Type:         schema.TypeString,
 		Description:  "Protocol for agent to agent tests, TCP or UDP.  Defaults to TCP",
 		Required:     true,
 		ValidateFunc: validation.StringInSlice([]string{"TCP", "UDP"}, false),
 	},
-	"protocol--sip": {
+	"protocol-sip": {
 		Type:         schema.TypeString,
 		Description:  "transport layer for SIP communication: TCP, TLS (TLS over TCP), or UDP. Defaults to TCP",
 		Required:     true,
@@ -701,7 +701,7 @@ var schemas = map[string]*schema.Schema{
 		Description: "Type of test",
 		Computed:    true,
 	},
-	"type--label": {
+	"type-label": {
 		Type:         schema.TypeString,
 		Description:  "Type of label (tests, agents, endpoint_tests, or endpoint_agents",
 		Required:     true,
@@ -738,7 +738,7 @@ var schemas = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "username to be used to authenticate with the destination server",
 	},
-	"username--ftp": {
+	"username-ftp": {
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "username to be used to authenticate with the destination server",
